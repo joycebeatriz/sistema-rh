@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06362d">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel do RH · Portal de Admissão</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2306362d'/%3E%3Cpath d='M20 33l8 8 16-17' fill='none' stroke='%237fcfb9' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="pagina-admin">
+  <!-- ================= LOGIN ================= -->
+  <section id="tela-login" class="login" hidden>
+    <div class="login-arte" aria-hidden="true">
+      <div class="marca marca-clara">
+        <span class="marca-logo"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <span class="marca-texto">Portal de <strong>Admissão</strong></span>
+      </div>
+
+      <div class="login-emblema">
+        <span class="anel anel-1"></span>
+        <span class="anel anel-2"></span>
+        <span class="anel anel-3"></span>
+        <span class="emblema-centro">
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>
+        </span>
+        <span class="emblema-ponto ponto-1"></span>
+        <span class="emblema-ponto ponto-2"></span>
+        <span class="emblema-ponto ponto-3"></span>
+      </div>
+
+      <p class="login-rodape-arte">Uso interno do RH</p>
+    </div>
+
+    <div class="login-lado">
+      <form id="form-login" class="login-form" novalidate>
+        <div class="login-cadeado" data-icone="lock" data-tam="28"></div>
+        <div>
+          <h1>Área do RH</h1>
+          <p class="muted">Entre com o seu e-mail e senha para acessar o painel.</p>
+        </div>
+        <div class="campo">
+          <label for="email-login">E-mail</label>
+          <input id="email-login" type="email" class="input" autocomplete="username" placeholder="nome@empresa.com.br" aria-describedby="erro-login">
+        </div>
+        <div class="campo">
+          <div class="campo-topo">
+            <label for="senha">Senha</label>
+            <button type="button" class="link-esqueci" id="btn-esqueci">Esqueci a senha</button>
+          </div>
+          <div class="input-senha">
+            <input id="senha" type="password" class="input" autocomplete="current-password" aria-describedby="erro-login">
+            <button type="button" id="ver-senha" class="btn btn-fantasma btn-icone btn-p" aria-label="Mostrar senha" data-icone="eye"></button>
+          </div>
+        </div>
+        <p class="msg-erro" id="erro-login" role="alert"></p>
+        <button class="btn btn-primario btn-bloco btn-login" type="submit">Entrar no painel</button>
+        <a href="index.html" class="link-portal">Ir para o portal do candidato <span data-icone="arrowRight" data-tam="16"></span></a>
+      </form>
+    </div>
+  </section>
+
+  <!-- ================= PAINEL ================= -->
+  <div id="tela-painel" class="painel" hidden>
+    <aside class="sidebar">
+      <div class="marca">
+        <span class="marca-logo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <span class="marca-texto">Portal de <strong>Admissão</strong></span>
+      </div>
+
+      <nav class="menu" aria-label="Menu principal">
+        <p class="menu-titulo">Menu</p>
+        <button class="menu-item" data-aba="dashboard"><span data-icone="dashboard"></span>Dashboard</button>
+        <button class="menu-item" data-aba="candidatos"><span data-icone="users"></span>Candidatos<span class="menu-contador" id="contador-menu"></span></button>
+        <button class="menu-item" data-aba="configuracoes"><span data-icone="settings"></span>Configurações</button>
+        <button class="menu-item menu-novo" data-novo><span data-icone="plus"></span>Novo candidato</button>
+      </nav>
+
+      <div class="sidebar-rodape">
+        <a class="menu-item" href="index.html" target="_blank" rel="noopener"><span data-icone="external"></span>Portal do candidato</a>
+        <div class="usuario">
+          <span class="avatar av-1" id="avatar-rh">MA</span>
+          <div class="usuario-info"><strong id="nome-rh">Mariana</strong><small>Recursos Humanos</small><span id="selo-papel" class="selo-papel" hidden>Somente leitura</span></div>
+          <button id="btn-sair" class="btn btn-fantasma btn-icone btn-p" aria-label="Sair" title="Sair" data-icone="logout" data-tam="18"></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="conteudo" id="conteudo">
+      <header class="topbar">
+        <div class="topbar-titulos">
+          <h1 id="titulo-aba">Dashboard</h1>
+          <p id="subtitulo-aba" class="muted"></p>
+        </div>
+        <div class="topbar-acoes">
+          <span class="atualizado muted" id="atualizado-em" aria-live="polite"></span>
+          <button id="btn-atualizar" class="btn btn-secundario btn-icone" aria-label="Atualizar dados" title="Atualizar dados" data-icone="refresh" data-tam="18"></button>
+          <button class="btn btn-primario btn-novo-topo" data-novo><span data-icone="plus" data-tam="18"></span><span>Novo candidato</span></button>
+        </div>
+      </header>
+
+      <section id="aba-dashboard" class="aba" aria-labelledby="titulo-aba"></section>
+      <section id="aba-candidatos" class="aba" aria-labelledby="titulo-aba" hidden></section>
+      <section id="aba-configuracoes" class="aba" aria-labelledby="titulo-aba" hidden></section>
+    </main>
+
+    <nav class="nav-mobile" aria-label="Menu">
+      <button data-aba="dashboard"><span data-icone="dashboard" data-tam="22"></span><span>Início</span></button>
+      <button data-aba="candidatos"><span data-icone="users" data-tam="22"></span><span>Candidatos</span></button>
+      <button class="nav-novo" data-novo aria-label="Novo candidato"><span data-icone="plus" data-tam="26"></span></button>
+      <button data-aba="configuracoes"><span data-icone="settings" data-tam="22"></span><span>Ajustes</span></button>
+    </nav>
+  </div>
+
+  <div id="drawer-fundo" class="drawer-fundo" hidden></div>
+  <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-titulo" hidden></aside>
+  <div id="modal-raiz"></div>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
