@@ -44,7 +44,7 @@
   --sombra-g: 0 24px 60px rgba(12, 25, 55, .20);
   --foco: 0 0 0 4px rgba(47, 111, 224, .35);
 
-  --fonte: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --fonte: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --transicao: 180ms cubic-bezier(.2, .8, .2, 1);
 }
