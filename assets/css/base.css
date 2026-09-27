@@ -3,26 +3,26 @@
    ========================================================================= */
 
 :root {
-  /* Marca: verde-petróleo (confiança, calma) + âmbar (atenção, calor) */
-  --marca-900: #06362d;
-  --marca-800: #094a3e;
-  --marca-700: #0b5d4e;
-  --marca-600: #0d7361;
-  --marca-500: #129077;
-  --marca-300: #7fcfb9;
-  --marca-100: #d9f2ea;
-  --marca-50: #effaf6;
+  /* Marca: azul royal (confiança, seriedade) + âmbar (atenção, calor) */
+  --marca-900: #0a1f4d;
+  --marca-800: #102b66;
+  --marca-700: #163a8a;
+  --marca-600: #1e4fb0;
+  --marca-500: #2f6fe0;
+  --marca-300: #9cbcf3;
+  --marca-100: #dbe6fb;
+  --marca-50: #eef3fd;
 
   --ambar-600: #b45309;
   --ambar-500: #f59e0b;
   --ambar-100: #fef3c7;
 
-  --tinta: #13201c;
-  --tinta-2: #3f4d48;
-  --tinta-3: #66736e;
-  --linha: #dfe6e3;
-  --linha-2: #edf2f0;
-  --fundo: #f4f7f6;
+  --tinta: #141a24;
+  --tinta-2: #414b59;
+  --tinta-3: #6a7482;
+  --linha: #dfe4ea;
+  --linha-2: #edf0f4;
+  --fundo: #f4f6fa;
   --superficie: #ffffff;
 
   --sucesso: #15803d;
@@ -39,10 +39,10 @@
   --raio-p: 10px;
   --raio: 16px;
   --raio-g: 24px;
-  --sombra-p: 0 1px 2px rgba(10, 30, 25, .06), 0 1px 3px rgba(10, 30, 25, .04);
-  --sombra: 0 6px 20px rgba(10, 30, 25, .07);
-  --sombra-g: 0 24px 60px rgba(10, 30, 25, .18);
-  --foco: 0 0 0 4px rgba(18, 144, 119, .35);
+  --sombra-p: 0 1px 2px rgba(15, 30, 60, .06), 0 1px 3px rgba(15, 30, 60, .04);
+  --sombra: 0 6px 20px rgba(15, 30, 60, .08);
+  --sombra-g: 0 24px 60px rgba(12, 25, 55, .20);
+  --foco: 0 0 0 4px rgba(47, 111, 224, .35);
 
   --fonte: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;

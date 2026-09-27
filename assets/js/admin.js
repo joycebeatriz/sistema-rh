@@ -58,6 +58,7 @@
     rascunho: null,
     salvo: '',
     config: { sub: 'geral', cargoSel: 0, msg: 'convite' },
+    usuarios: null,       // lista de usuários do painel (carregada sob demanda)
   };
 
   // Papel de acesso: 'admin' faz tudo; 'leitura' só visualiza (sem botões de ação)
@@ -1279,7 +1280,7 @@
     </header>`;
 
   function renderConfiguracoes() {
-    if (!A.token) return;
+    if (!A.token || somenteLeitura()) return;
     if (!A.rascunho) iniciarRascunho();
     const rolagem = window.scrollY;
     let sub = A.config.sub;
@@ -1303,6 +1304,7 @@
 
     atualizarBarraSalvar();
     if (sub === 'mensagens') atualizarPreviaMsg();
+    if (sub === 'usuarios' && A.usuarios === null) carregarUsuarios();
     window.scrollTo(0, rolagem);
   }
 
@@ -1362,6 +1364,139 @@
       botao.disabled = false;
       botao.innerHTML = original;
     }
+  }
+
+  /* ---------- Usuários do painel ---------- */
+  function configUsuarios() {
+    const lista = A.usuarios;
+    const corpo = lista === null
+      ? `<div class="config-carregando">${spinner('Carregando usuários…')}</div>`
+      : (!lista.length
+        ? vazio('Nenhum usuário ainda', 'Adicione a primeira pessoa abaixo.', 'users')
+        : `<ul class="lista-usuarios">${lista.map(linhaUsuario).join('')}</ul>`);
+
+    return `
+      <section class="card config-secao">
+        ${cabConfig('users', 'Quem acessa o painel', 'Administrador faz tudo; Somente leitura apenas visualiza (sem botões de ação). Cada pessoa entra com o próprio e-mail e senha.')}
+        <div id="usuarios-lista">${corpo}</div>
+      </section>
+
+      <section class="card config-secao">
+        ${cabConfig('plus', 'Adicionar usuário', 'A pessoa entra com este e-mail e a senha que você definir aqui (ela pode trocar depois).')}
+        <form id="form-add-usuario" class="config-grade" novalidate>
+          <div class="campo"><label for="u-nome">Nome</label><input id="u-nome" class="input" maxlength="60" autocomplete="off"></div>
+          <div class="campo"><label for="u-email">E-mail</label><input id="u-email" type="email" class="input" placeholder="nome@empresa.com.br" autocomplete="off"></div>
+          <div class="campo">
+            <label for="u-papel">Acesso</label>
+            <select id="u-papel" class="select">
+              <option value="leitura">Somente leitura</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="campo"><label for="u-senha">Senha inicial</label><input id="u-senha" type="text" class="input" autocomplete="off"><span class="ajuda-campo">Pelo menos 6 caracteres.</span></div>
+          <div class="campo campo-acao"><button type="submit" class="btn btn-primario">${icon('plus', 18)} Adicionar</button></div>
+          <p class="msg-erro" id="erro-usuario" role="alert"></p>
+        </form>
+      </section>`;
+  }
+
+  function linhaUsuario(u) {
+    const admin = u.papel === 'admin';
+    return `
+      <li class="linha-config linha-usuario ${u.ativo ? '' : 'inativa'}">
+        <span class="linha-icone">${icon(admin ? 'shieldCheck' : 'user', 20)}</span>
+        <div class="linha-principal">
+          <strong>${esc(u.nome || u.email)}</strong>
+          <small>${esc(u.email)} · ${admin ? 'Administrador' : 'Somente leitura'}${u.ativo ? '' : ' · inativo'}</small>
+        </div>
+        <div class="linha-acoes">
+          <button type="button" class="btn btn-fantasma btn-p" data-usr-papel="${esc(u.email)}" data-para="${admin ? 'leitura' : 'admin'}" title="Alterar acesso">${icon('refresh', 16)} ${admin ? 'Tornar leitura' : 'Tornar admin'}</button>
+          <button type="button" class="btn btn-fantasma btn-p" data-usr-ativo="${esc(u.email)}" data-para="${u.ativo ? '0' : '1'}">${u.ativo ? 'Desativar' : 'Ativar'}</button>
+          <button type="button" class="btn btn-fantasma btn-icone btn-p" data-usr-senha="${esc(u.email)}" title="Redefinir senha" aria-label="Redefinir senha de ${esc(u.nome || u.email)}">${icon('key', 16)}</button>
+          <button type="button" class="btn btn-perigo btn-icone btn-p" data-usr-remover="${esc(u.email)}" title="Remover" aria-label="Remover ${esc(u.nome || u.email)}">${icon('trash', 16)}</button>
+        </div>
+      </li>`;
+  }
+
+  async function carregarUsuarios() {
+    try {
+      const { usuarios } = await Api.chamar('admin.usuarios.listar', { token: A.token });
+      A.usuarios = usuarios || [];
+    } catch (err) {
+      A.usuarios = [];
+      tratarErro(err);
+    }
+    if (A.aba === 'configuracoes' && A.config.sub === 'usuarios') renderConfiguracoes();
+  }
+
+  // Recarrega a lista e re-renderiza (após uma ação)
+  async function recarregarUsuarios(resposta) {
+    if (resposta && resposta.usuarios) A.usuarios = resposta.usuarios;
+    else await carregarUsuarios();
+    if (A.aba === 'configuracoes' && A.config.sub === 'usuarios') renderConfiguracoes();
+  }
+
+  async function adicionarUsuario(form) {
+    const erro = $('#erro-usuario');
+    const nome = $('#u-nome').value.trim();
+    const email = $('#u-email').value.trim();
+    const papel = $('#u-papel').value === 'admin' ? 'admin' : 'leitura';
+    const senha = $('#u-senha').value;
+    const falhar = (msg, campo) => { erro.innerHTML = `${icon('alert', 18)}${esc(msg)}`; if (campo) campo.focus(); };
+    erro.innerHTML = '';
+    if (!nome) return falhar('Informe o nome.', $('#u-nome'));
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return falhar('E-mail inválido.', $('#u-email'));
+    if (senha.length < 6) return falhar('A senha precisa ter pelo menos 6 caracteres.', $('#u-senha'));
+
+    const botao = form.querySelector('button[type="submit"]');
+    botao.disabled = true;
+    botao.innerHTML = spinner('Adicionando…');
+    try {
+      const resposta = await Api.chamar('admin.usuarios.criar', { token: A.token, nome, email, papel, novaSenha: senha });
+      await recarregarUsuarios(resposta);
+      U.toast(`${nome} adicionado(a).`, 'sucesso');
+    } catch (err) {
+      if (err.codigo === 'SESSAO') tratarErro(err);
+      else falhar(err.message);
+      botao.disabled = false;
+      botao.innerHTML = `${icon('plus', 18)} Adicionar`;
+    }
+  }
+
+  async function acaoUsuario(fn) {
+    try {
+      const resposta = await fn();
+      await recarregarUsuarios(resposta);
+      return true;
+    } catch (err) {
+      tratarErro(err);
+      return false;
+    }
+  }
+
+  function modalSenhaUsuario(email) {
+    const m = abrirModal(`
+      <form id="form-senha-usr" novalidate>
+        <div class="modal-cabecalho">
+          <div><h2>Redefinir senha</h2><p>Defina uma nova senha para <strong>${esc(email)}</strong>.</p></div>
+          <button type="button" class="btn btn-fantasma btn-icone btn-p" data-fechar-modal aria-label="Fechar">${icon('x')}</button>
+        </div>
+        <div class="modal-corpo">
+          <div class="campo"><label for="su-nova">Nova senha</label><input id="su-nova" type="text" class="input" autocomplete="off" autofocus><span class="ajuda-campo">Pelo menos 6 caracteres.</span></div>
+          <p class="msg-erro" id="su-erro" role="alert"></p>
+        </div>
+        <div class="modal-rodape">
+          <button type="button" class="btn btn-secundario" data-fechar-modal>Cancelar</button>
+          <button type="submit" class="btn btn-primario">${icon('check', 18)} Salvar senha</button>
+        </div>
+      </form>`);
+    m.querySelector('#form-senha-usr').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nova = m.querySelector('#su-nova').value;
+      if (nova.length < 6) { m.querySelector('#su-erro').innerHTML = `${icon('alert', 18)}A senha precisa ter pelo menos 6 caracteres.`; return; }
+      const ok = await acaoUsuario(() => Api.chamar('admin.usuarios.senha', { token: A.token, emailAlvo: email, novaSenha: nova }));
+      if (ok) { fecharModal(); U.toast('Senha redefinida.', 'sucesso'); }
+    });
   }
 
   /* ---------- Empresas ---------- */
@@ -1687,6 +1822,29 @@
     const d = b.dataset;
     const cargo = r.cargos[A.config.cargoSel];
 
+    // Ações de usuários (chamam a API na hora, fora do fluxo de "salvar alterações")
+    if (d.usrPapel !== undefined) {
+      acaoUsuario(() => Api.chamar('admin.usuarios.editar', { token: A.token, emailAlvo: d.usrPapel, papel: d.para }));
+      return;
+    } else if (d.usrAtivo !== undefined) {
+      acaoUsuario(() => Api.chamar('admin.usuarios.editar', { token: A.token, emailAlvo: d.usrAtivo, ativo: d.para === '1' }));
+      return;
+    } else if (d.usrSenha !== undefined) {
+      modalSenhaUsuario(d.usrSenha);
+      return;
+    } else if (d.usrRemover !== undefined) {
+      const alvo = (A.usuarios || []).find((u) => u.email === d.usrRemover);
+      const ok = await confirmar({
+        titulo: `Remover ${esc(alvo ? (alvo.nome || alvo.email) : d.usrRemover)}?`,
+        texto: 'Essa pessoa perde o acesso ao painel imediatamente. Os candidatos e documentos não são afetados.',
+        botao: 'Remover usuário',
+        perigo: true,
+        icone: 'trash',
+      });
+      if (ok) acaoUsuario(() => Api.chamar('admin.usuarios.remover', { token: A.token, emailAlvo: d.usrRemover }));
+      return;
+    }
+
     if (d.configAba) {
       A.config.sub = d.configAba;
     } else if (b.hasAttribute('data-salvar')) {
@@ -1746,6 +1904,7 @@
   abaConfig.addEventListener('submit', (e) => {
     e.preventDefault();
     if (e.target.id === 'form-senha') return trocarSenha(e.target);
+    if (e.target.id === 'form-add-usuario') return adicionarUsuario(e.target);
     if (e.target.id !== 'form-add-empresa') return;
 
     const campo = $('#nova-empresa');

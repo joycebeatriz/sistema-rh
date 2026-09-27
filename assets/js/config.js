@@ -24,7 +24,7 @@ window.APP_CONFIG = {
     'Rápido Araguaia',
     'Viação Araguarina',
     'Shopping do Cerrado',
-    'Osac – Edilon Santos',
+    'Osac – Odilon Santos',
   ],
 
   // Variáveis: {primeiro_nome} {nome} {codigo} {link} {empresa} {cargo} {rh}
