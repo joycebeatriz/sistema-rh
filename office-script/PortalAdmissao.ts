@@ -152,7 +152,7 @@ class Portal {
   executar(acao: string, d: Dados, interno: boolean): RespostaDados {
     this.instalar();
     switch (acao) {
-      case 'candidato.entrar': return { candidato: this.publico(this.acharPorCodigo(d.codigo)) };
+      case 'candidato.entrar': return { candidato: publico_(this.acharPorCodigo(d.codigo)) };
       case 'candidato.enviar': return this.enviarDocumento(d);
       case 'candidato.pular': return this.pularDocumento(d);
       case 'candidato.concluir': return this.concluir(d);
@@ -163,7 +163,7 @@ class Portal {
       case 'admin.esqueciSenha': return this.esqueciSenha(d);
       case 'admin.redefinirSenha': return this.redefinirSenha(d);
       // Leitura: qualquer usuário logado (admin ou somente leitura)
-      case 'admin.listar': { const s = this.exigirSessao(d.token); return { candidatos: this.lerTodos().map((c) => this.limpar(c)), ajustes: this.lerAjustes(), papel: s.papel }; }
+      case 'admin.listar': { const s = this.exigirSessao(d.token); return { candidatos: this.lerTodos().map((c) => limpar_(c)), ajustes: this.lerAjustes(), papel: s.papel }; }
       // Escrita: só administradores
       case 'admin.criar': this.exigirAdmin(d.token); return this.criarCandidato(d);
       case 'admin.editar': this.exigirAdmin(d.token); return this.editarCandidato(d);
@@ -242,7 +242,7 @@ class Portal {
     };
     c.atualizadoEm = agora_();
     this.salvar(c);
-    return { candidato: this.publico(c) };
+    return { candidato: publico_(c) };
   }
 
   pularDocumento(d: Dados): RespostaDados {
@@ -252,7 +252,7 @@ class Portal {
     c.docs[doc.id] = { pulado: true, enviadoEm: '', puladoEm: agora_() };
     c.atualizadoEm = agora_();
     this.salvar(c);
-    return { candidato: this.publico(c) };
+    return { candidato: publico_(c) };
   }
 
   concluir(d: Dados): RespostaDados {
@@ -262,7 +262,7 @@ class Portal {
     c.concluidoEm = c.concluidoEm || agora_();
     c.atualizadoEm = agora_();
     this.salvar(c);
-    return { candidato: this.publico(c) };
+    return { candidato: publico_(c) };
   }
 
   obrigatoriosFaltando(c: Candidato): Documento[] {
@@ -364,7 +364,7 @@ class Portal {
     const usado = aba.getUsedRange(true);
     c._linha = usado ? usado.getRowIndex() + usado.getRowCount() + 1 : 2;
     this.salvar(c);
-    return { candidato: this.limpar(c) };
+    return { candidato: limpar_(c) };
   }
 
   editarCandidato(d: Dados): RespostaDados {
@@ -407,7 +407,7 @@ class Portal {
 
     c.atualizadoEm = agora_();
     this.salvar(c);
-    return { candidato: this.limpar(c) };
+    return { candidato: limpar_(c) };
   }
 
   pedirReenvio(d: Dados): RespostaDados {
@@ -419,7 +419,7 @@ class Portal {
     c.concluidoEm = '';
     c.atualizadoEm = agora_();
     this.salvar(c);
-    return { candidato: this.limpar(c) };
+    return { candidato: limpar_(c) };
   }
 
   excluir(d: Dados): RespostaDados {
@@ -487,7 +487,7 @@ class Portal {
     }
 
     this.gravarAjustes(ajustes);
-    return { ajustes, candidatos: this.lerTodos().map((c) => this.limpar(c)) };
+    return { ajustes, candidatos: this.lerTodos().map((c) => limpar_(c)) };
   }
 
   // Cada pessoa troca a própria senha (sabemos quem é pela sessão)
@@ -729,22 +729,25 @@ class Portal {
     }
   }
 
+  mapaSistema(): { [chave: string]: string } {
+    if (this.sistema) return this.sistema;
+    const mapa: { [chave: string]: string } = {};
+    this.linhas(this.aba('Sistema', ['chave', 'valor'])).forEach((l) => {
+      if (l[0]) mapa[String(l[0])] = String(l[1] === undefined ? '' : l[1]);
+    });
+    this.sistema = mapa;
+    return mapa;
+  }
+
   lerSistema(chave: string): string {
-    if (!this.sistema) {
-      const mapa: { [chave: string]: string } = {};
-      this.linhas(this.aba('Sistema', ['chave', 'valor'])).forEach((l) => {
-        if (l[0]) mapa[String(l[0])] = String(l[1] === undefined ? '' : l[1]);
-      });
-      this.sistema = mapa;
-    }
-    return this.sistema[chave] || '';
+    return this.mapaSistema()[chave] || '';
   }
 
   gravarSistema(chave: string, valor: string) {
-    this.lerSistema(chave);
-    this.sistema![chave] = valor;
+    const mapa = this.mapaSistema();
+    mapa[chave] = valor;
     const aba = this.aba('Sistema', ['chave', 'valor']);
-    this.reescrever(aba, 2, Object.keys(this.sistema!).map((k) => [k, this.sistema![k]]));
+    this.reescrever(aba, 2, Object.keys(mapa).map((k) => [k, mapa[k]]));
   }
 
   lerTodos(): Candidato[] {
@@ -765,26 +768,29 @@ class Portal {
     return c;
   }
 
-  // O candidato nunca recebe links do SharePoint nem dados internos
-  publico(c: Candidato): CandidatoPublico {
-    const docs: { [id: string]: DocEnviado } = {};
-    Object.keys(c.docs || {}).forEach((id) => {
-      const d = c.docs[id];
-      docs[id] = { enviadoEm: d.enviadoEm || '', pulado: !!d.pulado, reenviar: !!d.reenviar, arquivoNome: d.arquivoNome || '' };
-    });
-    return { codigo: c.codigo, nome: c.nome, cargo: c.cargo, empresa: c.empresa, documentos: c.documentos, docs, concluidoEm: c.concluidoEm };
-  }
-
-  limpar(c: Candidato): Candidato {
-    const copia = Object.assign({}, c);
-    delete copia._linha;
-    return copia;
-  }
 }
 
 /* ------------------------------------------------------------------------
    AUXILIARES
+   Ficam fora da classe de propósito: o Office Script não aceita chamar
+   métodos da classe (this.algo) dentro de funções como .map((x) => ...).
    ------------------------------------------------------------------------ */
+// O candidato nunca recebe links do SharePoint nem dados internos
+function publico_(c: Candidato): CandidatoPublico {
+  const docs: { [id: string]: DocEnviado } = {};
+  Object.keys(c.docs || {}).forEach((id) => {
+    const d = c.docs[id];
+    docs[id] = { enviadoEm: d.enviadoEm || '', pulado: !!d.pulado, reenviar: !!d.reenviar, arquivoNome: d.arquivoNome || '' };
+  });
+  return { codigo: c.codigo, nome: c.nome, cargo: c.cargo, empresa: c.empresa, documentos: c.documentos, docs, concluidoEm: c.concluidoEm };
+}
+
+function limpar_(c: Candidato): Candidato {
+  const copia = Object.assign({}, c);
+  delete copia._linha;
+  return copia;
+}
+
 function paraObjeto_(linha: (string | number | boolean)[], numeroLinha: number): Candidato {
   const o: { [chave: string]: string | number | Documento[] | { [id: string]: DocEnviado } } = { _linha: numeroLinha };
   COLUNAS.forEach((chave, i) => {
