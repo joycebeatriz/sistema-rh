@@ -13,6 +13,13 @@
   background: var(--info-fundo); color: var(--info); border-radius: 999px;
   font-size: .68rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase;
 }
+/* Usuários do painel */
+.lista-usuarios { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.linha-usuario .linha-principal strong { font-size: .95rem; }
+.linha-usuario .linha-principal small { display: block; color: var(--tinta-3); font-size: .8rem; }
+.linha-acoes { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; margin-left: auto; }
+.config-carregando { display: flex; align-items: center; gap: .5rem; color: var(--tinta-3); padding: .8rem .2rem; }
+
 /* No modo leitura, some com todos os botões de ação (o servidor também recusa por segurança) */
 .painel-leitura [data-novo],
 .painel-leitura [data-aba="configuracoes"],

@@ -9,20 +9,18 @@ Sistema para a Mariana (RH) receber a documentação dos candidatos **sem precis
 
 ---
 
-## 1. Testar agora (modo demonstração)
+## 1. Endereços
 
-Não precisa configurar nada. Abra os arquivos no navegador:
-
-| Página | Arquivo | Acesso |
+| Página | Endereço | Acesso |
 |---|---|---|
-| Portal do candidato | `index.html` | use o código que aparece na faixa amarela |
-| Painel do RH | `admin.html` | senha **mariana123** |
+| Portal do candidato | https://sistema-documentacao.vercel.app/ | código de 6 números enviado pelo RH |
+| Painel do RH | https://sistema-documentacao.vercel.app/admin | e-mail e senha cadastrados (veja 3.4) |
 
-No modo demonstração os dados ficam só no navegador (vêm 14 candidatos de exemplo).
-Para voltar ao início, clique em “restaurar dados de exemplo” na faixa amarela do painel.
+O sistema só funciona depois de ligado ao Microsoft 365 (seção 3). Sem o `API_URL` no `config.js`,
+o painel mostra “Sistema não configurado”.
 
-> Dica: se o navegador bloquear algo abrindo o arquivo direto, rode um servidor simples na pasta:
-> `python3 -m http.server 8080` e acesse `http://localhost:8080`.
+🔒 **Nenhuma senha fica escrita neste repositório** (ele é público). As senhas ficam só na planilha
+Excel, embaralhadas (hash), e cada pessoa cadastra ou troca a sua pelo painel.
 
 ---
 
@@ -30,7 +28,8 @@ Para voltar ao início, clique em “restaurar dados de exemplo” na faixa amar
 
 ```
 index.html              → portal do candidato
-admin.html              → painel do RH (login, dashboard, candidatos)
+admin.html              → painel do RH (login, dashboard, candidatos) · no site publicado: /admin
+vercel.json             → endereços sem “.html” na Vercel (/admin em vez de /admin.html)
 assets/
   css/base.css          → cores, botões, componentes
   css/candidato.css     → telas do candidato
@@ -78,10 +77,14 @@ site ──► Power Automate ──► Office Script (planilha Excel)   → val
 3. No topo do script, ajuste:
    - `SITE_URL`: endereço do site, ex.: `'https://suaempresa.sharepoint.com/sites/RH'`
    - `PASTA_RAIZ`: o caminho anotado no passo 3.1, ex.: `'/Shared Documents/Integração – Documentos dos candidatos'`
+   - `ADMIN_INICIAL_EMAIL` e `ADMIN_INICIAL_SENHA`: o e-mail e a senha (mínimo 8 caracteres) do **primeiro administrador**.
+     🔒 Preencha **só na cópia dentro do Excel**. **Nunca** coloque senha no arquivo do GitHub: o repositório é público.
 4. Renomeie o script para **`PortalAdmissao`** e clique em **Salvar script**.
 
 Não precisa rodar nada. Na primeira chamada, o script cria sozinho as abas `Candidatos` (visível) e
-`Sessoes`, `Ajustes` e `Sistema` (ocultas), além da senha inicial **`troque-esta-senha`**.
+`Sessoes`, `Usuarios`, `Ajustes` e `Sistema` (ocultas). Ainda não há usuários: só o **primeiro login**
+com exatamente o `ADMIN_INICIAL_EMAIL` e a `ADMIN_INICIAL_SENHA` cria o administrador (veja 3.4).
+Se esses campos estiverem vazios, ninguém consegue entrar.
 
 ### 3.3 Fluxo no Power Automate
 
@@ -115,15 +118,20 @@ Salve o fluxo. Abra de novo o gatilho e copie a **URL HTTP POST**.
 ### 3.4 Ligar o site
 
 1. Abra `assets/js/config.js` e cole a URL em `API_URL: '...'`.
-2. Abra o `admin.html`, entre com **`troque-esta-senha`** e, em **Configurações → Geral**,
-   **troque a senha** e **cadastre o e-mail de recuperação**.
-3. Cadastre um candidato de teste, envie uma foto pelo portal e confira se a pasta apareceu no SharePoint.
+2. Abra o `/admin` e entre com o `ADMIN_INICIAL_EMAIL` e a `ADMIN_INICIAL_SENHA` que você colocou no script do Excel.
+   Esse primeiro acesso **cria você como administrador**.
+3. Volte ao script no Excel, **apague a senha** de `ADMIN_INICIAL_SENHA` (deixe `''`) e salve.
+   Ela não é mais usada, e assim não fica escrita em lugar nenhum.
+4. Em **Configurações → Usuários**, cadastre as outras pessoas (cada uma com e-mail, senha e
+   o acesso **Administrador** ou **Somente leitura**).
+5. Cadastre um candidato de teste, envie uma foto pelo portal e confira se a pasta apareceu no SharePoint.
 
 > Ao alterar o script depois, basta colar a nova versão no Excel e salvar. O fluxo continua o mesmo.
 
-> **Perdeu a senha e não tem e-mail de recuperação?** No Excel, clique com o botão direito numa aba →
-> **Reexibir** → `Sistema`, apague o valor da linha `senhaHash` e oculte a aba de novo.
-> A senha volta a ser `troque-esta-senha`.
+> **Perdeu a senha?** Use **"Esqueci a senha"** na tela de entrada: um código chega no próprio e-mail
+> de acesso da conta. Se ninguém mais tiver acesso de administrador, no Excel clique com o botão direito
+> numa aba → **Reexibir** → `Usuarios`, apague a linha do usuário travado (ou todas as linhas para recomeçar
+> do zero: preencha de novo `ADMIN_INICIAL_EMAIL` e `ADMIN_INICIAL_SENHA` no script e faça o primeiro acesso).
 
 ### Pasta por semana (opcional)
 No script, mude `PASTA_POR_SEMANA: true` para organizar assim:
@@ -137,15 +145,19 @@ Depois de instalado, **quem usa o painel faz tudo sozinho** em **Configurações
 
 | Parte | O que dá para fazer |
 |---|---|
-| **Geral** | Nome e WhatsApp do RH · e-mail de recuperação · trocar a senha |
+| **Geral** | Nome e WhatsApp do RH · trocar a **sua** senha |
+| **Usuários** *(só administradores)* | Adicionar pessoas, definir **Administrador** ou **Somente leitura**, ativar/desativar, redefinir senha e remover |
 | **Empresas** | Adicionar, renomear (os candidatos antigos são atualizados juntos), desativar e remover |
 | **Cargos e documentos** | Criar cargos · adicionar, renomear, reordenar e remover documentos · escrever a explicação · marcar obrigatório/opcional |
 | **Mensagens** | Editar os textos de convite, cobrança e pedido de nova foto, com prévia ao vivo |
 
 E nos detalhes de cada candidato há o botão **Editar** (nome, WhatsApp, empresa e cargo), sem trocar o código.
 
-**Esqueci a senha:** na tela de entrada. Um código chega no e-mail de recuperação cadastrado em Configurações → Geral.
-Por isso, **cadastre esse e-mail logo no primeiro acesso**.
+**Papéis de acesso:** cada pessoa entra com **o próprio e-mail e senha**.
+- **Administrador:** faz tudo (cadastrar, editar, excluir, configurar e gerenciar usuários).
+- **Somente leitura:** só visualiza o dashboard e os candidatos — sem nenhum botão de ação.
+
+**Esqueci a senha:** na tela de entrada. Digite o seu e-mail e um código chega **nesse mesmo e-mail** (o de acesso).
 
 > O `assets/js/config.js` agora só guarda os **valores iniciais** (usados até a primeira vez que alguém salvar pelo painel)
 > e o endereço da API. As configurações salvas ficam na aba oculta **Ajustes** da planilha Excel.
@@ -172,8 +184,8 @@ para atualizar alguém já cadastrado, use **Editar** e marque “usar a lista a
 ## 6. Segurança e LGPD
 
 - O candidato **nunca** vê links do SharePoint, só envia arquivos.
-- O painel exige senha; a sessão expira em 6 horas; após 10 tentativas erradas, o login bloqueia por 10 minutos.
-- A senha **não** fica escrita na planilha: só uma versão embaralhada (hash SHA-256 com sal).
+- O painel exige e-mail + senha por pessoa, com papéis (**Administrador** / **Somente leitura**); a sessão expira em 6 horas; após 10 tentativas erradas, o login bloqueia por 10 minutos.
+- As senhas **não** ficam escritas na planilha: só uma versão embaralhada (hash SHA-256 com sal), uma por usuário na aba oculta `Usuarios`.
 - Quem tiver acesso à planilha Excel vê os dados dos candidatos. **Compartilhe a planilha e a pasta só com o Departamento Pessoal.**
 - A URL do fluxo funciona como uma chave: não publique em lugar aberto além do próprio site.
 - Ao **excluir** um candidato, a pasta dele vai para a lixeira do SharePoint.

@@ -293,8 +293,8 @@ html.alto-contraste {
   --tinta: #000; --tinta-2: #000; --tinta-3: #1a1a1a;
   --linha: #000; --linha-2: #555;
   --fundo: #fff; --superficie: #fff;
-  --marca-600: #00473b; --marca-700: #00362d; --marca-800: #00241e; --marca-500: #00473b;
-  --marca-300: #000; --marca-100: #e0f0ea; --marca-50: #fff;
+  --marca-600: #0a2e73; --marca-700: #08215a; --marca-800: #061741; --marca-500: #0a2e73;
+  --marca-300: #000; --marca-100: #e0e9f7; --marca-50: #fff;
 }
 html.alto-contraste .pagina-candidato { background: #fff; }
 html.alto-contraste .cartao,

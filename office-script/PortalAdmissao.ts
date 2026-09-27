@@ -18,7 +18,10 @@ const CONFIG = {
   SITE_URL: 'https://constate-my.sharepoint.com/personal/marianasilva_odilonsantos_com',
   // Pasta raiz dos documentos, a partir do site: /<biblioteca>/<pasta>
   PASTA_RAIZ: '/Documents/Sistema-RH',
-  SENHA_INICIAL: 'troque-esta-senha',
+  // 1º acesso: preencha os dois SÓ na cópia do script dentro do Excel, nunca aqui no GitHub.
+  // Depois que o primeiro administrador entrar, eles deixam de ser usados (pode apagar).
+  ADMIN_INICIAL_EMAIL: '',
+  ADMIN_INICIAL_SENHA: '',
   FUSO_HORAS: -3,             // America/Sao_Paulo (sem horário de verão)
   SESSAO_HORAS: 6,
   PASTA_POR_SEMANA: false,    // true → Integração / Semana 08-09 a 14-09-2026 / Nome - Data
@@ -284,10 +287,14 @@ class Portal {
     const linhas = this.linhasUsuarios();
     let usuario = linhas.find((u) => u.email === email);
 
-    // 1º acesso: sem nenhum usuário ainda. Quem entrar com a SENHA_INICIAL vira o
-    // primeiro administrador, usando o e-mail digitado.
+    // 1º acesso: sem nenhum usuário ainda. Só entra quem digitar exatamente o
+    // ADMIN_INICIAL_EMAIL e a ADMIN_INICIAL_SENHA preenchidos no script do Excel.
     if (linhas.length === 0) {
-      if (senha !== CONFIG.SENHA_INICIAL) {
+      const emailInicial = normalizarEmail_(CONFIG.ADMIN_INICIAL_EMAIL);
+      if (!emailInicial || CONFIG.ADMIN_INICIAL_SENHA.length < 8) {
+        throw new Falha('Primeiro acesso não configurado. Preencha ADMIN_INICIAL_EMAIL e ADMIN_INICIAL_SENHA (mínimo 8 caracteres) no script do Excel.');
+      }
+      if (email !== emailInicial || senha !== CONFIG.ADMIN_INICIAL_SENHA) {
         this.registrarFalhaLogin(agora, tentativas);
         throw new Falha('E-mail ou senha incorretos.');
       }
