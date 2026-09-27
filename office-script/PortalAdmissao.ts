@@ -853,7 +853,7 @@ function validarEmail_(email: string): boolean {
 
 // Caracteres que o SharePoint não aceita (ou que quebram links) em nomes de arquivo e pasta
 function nomeSeguro_(nome: string): string {
-  return nome.replace(/[\\/:*?"<>|#%]/g, '-').replace(/^[\s.]+|[\s.]+$/g, '');
+  return nome.replace(/[\\\/:*?"<>|#%]/g, '-').replace(/^[\s.]+|[\s.]+$/g, '');
 }
 
 function caminhoSite_(): string {
@@ -940,13 +940,14 @@ function sha256_(texto: string): string {
       const s1 = rot(w[i - 2], 17) ^ rot(w[i - 2], 19) ^ (w[i - 2] >>> 10);
       w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
     }
-    let [a, b, c, d, e, f, g, h] = H;
+    let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
     for (let i = 0; i < 64; i++) {
       const t1 = (h + (rot(e, 6) ^ rot(e, 11) ^ rot(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
       const t2 = ((rot(a, 2) ^ rot(a, 13) ^ rot(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
       h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
     }
-    [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) | 0; });
+    const vs = [a, b, c, d, e, f, g, h];
+    for (let i = 0; i < 8; i++) H[i] = (H[i] + vs[i]) | 0;
   }
   return H.map((v) => ('00000000' + (v >>> 0).toString(16)).slice(-8)).join('');
 }
